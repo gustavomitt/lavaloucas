@@ -40,7 +40,7 @@ TSPoint tp;
 #define MAXPRESSURE 1000
 
 
-MCUFRIEND_kbv tft; // Objeto  de comunicação com  display
+volatile MCUFRIEND_kbv tft; // Objeto  de comunicação com  display
 
 // Inicializa termopar
 int thermo_gnd_pin = 45;
@@ -85,8 +85,8 @@ boolean ebulidorFuncionandoOld;
 // Estado do time
 boolean timerLigado;
 #define tempoAquecido 300000000 // 5 minutos
-#define tempoExaustao 15000000 // 15 segundos
-#define tempoExague 300000000 // 5 minutos
+#define tempoExaustao  45000000 // 45 segundos
+#define tempoExague   300000000 // 5 minutos
 
 // variaveis de estado
 volatile byte estadoAtual;
@@ -94,7 +94,8 @@ volatile byte estadoAnterior;
 
 // Timer
 //auto timer = timer_create_default(); // create a timer with default settings
-
+volatile bool primeiraChamadaDoTimer3;
+volatile bool primeiraChamadaDoTimer4;
 
 // liga e desliga atuadores
 void desligaBombaDeCirculacao(){
@@ -147,11 +148,18 @@ void setState(int estado){
   Serial.print("\n");
 }
 
+void entraEstadoDesligado_Timer4(){
+  if(primeiraChamadaDoTimer4) {
+    primeiraChamadaDoTimer4 = false;
+  }else {
+    Timer4.detachInterrupt();
+    entraEstadoDesligado();
+  }
+
+}
+
 // funcoes de entradas dos estados
 void entraEstadoDesligado(){
-
-  // Desabilita timer
-  Timer3.detachInterrupt();
   
   Serial.print("Entrando no estado desligado\n");
   // seta estados
@@ -180,14 +188,22 @@ void entraEstadoPausado(){
   telaPausado();
 }
 
-void entraEstadoEncher_2(){
-  Timer3.detachInterrupt();
-  entraEstadoEncher(ENCHER_2);
+void entraEstadoEncher_2_Timer4(){
+  if(primeiraChamadaDoTimer4) {
+    primeiraChamadaDoTimer4 = false;
+  }else {
+    Timer4.detachInterrupt();
+    entraEstadoEncher(ENCHER_2);
+  }
 }
 
-void entraEstadoEncher_3(){
-  Timer3.detachInterrupt();
-  entraEstadoEncher(ENCHER_3);
+void entraEstadoEncher_3_Timer4(){
+  if(primeiraChamadaDoTimer4) {
+    primeiraChamadaDoTimer4 = false;
+  }else {
+    Timer4.detachInterrupt();
+    entraEstadoEncher(ENCHER_3);
+  }
 }
 
 void entraEstadoEncher(int estado){
@@ -221,8 +237,9 @@ void entraEstadoAspergir(int estado){
     case ENXAGUE_1:
       Serial.print("Ligando timer para acabar enxague\n");
       //timer.in(tempoExague, entraEstadoEsvaziar,ESVAZIAR_2);
-      Timer3.setPeriod(tempoExague);
-      Timer3.attachInterrupt(entraEstadoEsvaziar_2);
+      primeiraChamadaDoTimer3 = true;
+      Timer3.initialize(tempoExague);
+      Timer3.attachInterrupt(entraEstadoEsvaziar_2_Timer3);
       break;
   }
   
@@ -255,14 +272,22 @@ void entraEstadoAquecer(int estado){
   telaLigado();
 }
 
-void entraEstadoEsvaziar_1(){
-  Timer3.detachInterrupt();
-  entraEstadoEsvaziar(ESVAZIAR_1);
+void entraEstadoEsvaziar_1_Timer3(){
+  if(primeiraChamadaDoTimer3) {
+    primeiraChamadaDoTimer3 = false;
+  }else {
+    Timer3.detachInterrupt();
+    entraEstadoEsvaziar(ESVAZIAR_1);
+  }
 }
 
-void entraEstadoEsvaziar_2(){
-  Timer3.detachInterrupt();
-  entraEstadoEsvaziar(ESVAZIAR_2);
+void entraEstadoEsvaziar_2_Timer3(){
+  if(primeiraChamadaDoTimer3) {
+    primeiraChamadaDoTimer3 = false;
+  }else {
+    Timer3.detachInterrupt();
+    entraEstadoEsvaziar(ESVAZIAR_2);
+  }
 }
 
 void entraEstadoEsvaziar(int estado){
@@ -273,18 +298,21 @@ void entraEstadoEsvaziar(int estado){
   Serial.print("Ligando timer para desligar bomba de exaustao\n");
   switch(estado){
     case ESVAZIAR_1:
-      Timer4.setPeriod(tempoExaustao);
-      Timer4.attachInterrupt(entraEstadoEncher_2);
+      primeiraChamadaDoTimer4 = true;
+      Timer4.initialize(tempoExaustao);
+      Timer4.attachInterrupt(entraEstadoEncher_2_Timer4);
       //timer.in(tempoExaustao, entraEstadoEncher,ENCHER_2);
       break;
     case ESVAZIAR_2:
-      Timer4.setPeriod(tempoExaustao);
-      Timer4.attachInterrupt(entraEstadoEncher_3);
+      primeiraChamadaDoTimer4 = true;
+      Timer4.initialize(tempoExaustao);
+      Timer4.attachInterrupt(entraEstadoEncher_3_Timer4);
       //timer.in(tempoExaustao, entraEstadoEncher,ENCHER_3);
       break;
     case ESVAZIAR_3:
-      Timer4.setPeriod(tempoExaustao);
-      Timer4.attachInterrupt(entraEstadoDesligado);
+      primeiraChamadaDoTimer4 = true;
+      Timer4.initialize(tempoExaustao);
+      Timer4.attachInterrupt(entraEstadoDesligado_Timer4);
       Serial.print("timer de ");
       Serial.print(tempoExaustao/1000000);
       Serial.print(" ativado\n");
@@ -347,7 +375,7 @@ bool botaoEsquerdoPressionado(){
 
 void telaDesligado(){
   tft.setRotation(3); // Display é rotacionado para modo paisagem
-  tft.fillScreen(PRETO); // Tela  é preenchida pela cor Branca
+  tft.fillScreen(PRETO); // Tela  é preenchida pela cor Preta
   escreveTexto(50,0,"Desligado",3,BRANCO); // Texto é escrito na posição (50,0)
   escreveTexto(50,50,"Temperatura:",2,VERDE); // Texto é escrito na posição (50,0)
   escreveTexto(50,70,"Nivel: baixo",2,VERDE); // Texto é escrito na posição (50,0)
@@ -594,8 +622,9 @@ void loop() {
         if( !timerLigado ) {
           timerLigado = true;
           Serial.print("timerligado = true\n");
-          Timer3.setPeriod(tempoAquecido);
-          Timer3.attachInterrupt(entraEstadoEsvaziar_1);
+          primeiraChamadaDoTimer3 = true;
+          Timer3.initialize(tempoAquecido);
+          Timer3.attachInterrupt(entraEstadoEsvaziar_1_Timer3);
           //timer.in(tempoAquecido, entraEstadoEsvaziar,ESVAZIAR_1);
         }
         entraEstadoAspergir(LAVAR);
