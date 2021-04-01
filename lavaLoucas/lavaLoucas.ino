@@ -2,7 +2,7 @@
 #include <MCUFRIEND_kbv.h> // Bibllioteca para controle do lcd 
 #include <TouchScreen.h>
 #include "max6675.h"
-//#include <arduino-timer.h>
+#include <arduino-timer.h>
 #include <TimerOne.h>
 #include <TimerThree.h>
 #include <TimerFour.h>
@@ -93,7 +93,7 @@ volatile byte estadoAtual;
 volatile byte estadoAnterior;
 
 // Timer
-//auto timer = timer_create_default(); // create a timer with default settings
+auto timer = timer_create_default(); // create a timer with default settings
 volatile bool primeiraChamadaDoTimer3;
 volatile bool primeiraChamadaDoTimer4;
 
@@ -236,10 +236,10 @@ void entraEstadoAspergir(int estado){
   switch(estado){
     case ENXAGUE_1:
       Serial.print("Ligando timer para acabar enxague\n");
-      //timer.in(tempoExague, entraEstadoEsvaziar,ESVAZIAR_2);
-      primeiraChamadaDoTimer3 = true;
-      Timer3.initialize(tempoExague);
-      Timer3.attachInterrupt(entraEstadoEsvaziar_2_Timer3);
+      timer.in(tempoExague, entraEstadoEsvaziar,ESVAZIAR_2);
+      //primeiraChamadaDoTimer3 = true;
+      //Timer3.initialize(tempoExague);
+      //Timer3.attachInterrupt(entraEstadoEsvaziar_2_Timer3);
       break;
   }
   
@@ -533,7 +533,7 @@ void setup() {
   Timer1.initialize(1000000);
   Timer1.attachInterrupt(lerTemperatura);  
   // Inicia o Timer3 para ser usado em temporizadores da lavagem
-  Timer3.initialize(36000000000); // uma hora, tempo infinito
+  //Timer3.initialize(36000000000); // uma hora, tempo infinito
   // Inicia o Timer4 para ser usado em temporizadores do enchague
   Timer4.initialize(36000000000); // uma hora, tempo infinito
 
@@ -622,10 +622,10 @@ void loop() {
         if( !timerLigado ) {
           timerLigado = true;
           Serial.print("timerligado = true\n");
-          primeiraChamadaDoTimer3 = true;
-          Timer3.initialize(tempoAquecido);
-          Timer3.attachInterrupt(entraEstadoEsvaziar_1_Timer3);
-          //timer.in(tempoAquecido, entraEstadoEsvaziar,ESVAZIAR_1);
+          //primeiraChamadaDoTimer3 = true;
+          //Timer3.initialize(tempoAquecido);
+          //Timer3.attachInterrupt(entraEstadoEsvaziar_1_Timer3);
+          timer.in(tempoAquecido, entraEstadoEsvaziar,ESVAZIAR_1);
         }
         entraEstadoAspergir(LAVAR);
       }
