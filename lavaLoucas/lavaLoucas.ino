@@ -4,8 +4,8 @@
 #include "max6675.h"
 #include <arduino-timer.h>
 #include <TimerOne.h>
-#include <TimerThree.h>
-#include <TimerFour.h>
+//#include <TimerThree.h>
+//#include <TimerFour.h>
 
 // Definicao de estados
 #define DESLIGADO 1
@@ -57,15 +57,16 @@ MAX6675 sensor(thermo_sck_pin, thermo_cs_pin, thermo_so_pin);
 volatile byte temperatura;
 volatile byte temperaturaOld;
 
-//#define MINTEMPERATURE 45.0
-//#define MAXTEMPERATURE 55.0
-#define MINTEMPERATURE 30.0
-#define MAXTEMPERATURE 35.0
+#define MINTEMPERATURE 45.0
+#define MAXTEMPERATURE 55.0
+//#define MINTEMPERATURE 30.0
+//#define MAXTEMPERATURE 35.0
 
 // Nivel
 int nivel = 21;
-volatile bool cheio;
-volatile bool cheioOld;
+volatile bool volatileCheio;
+bool cheio;
+bool cheioOld;
 
 
 // pino dos atuadores
@@ -76,26 +77,33 @@ const int valvula = 28;
 
 
 // Estado dos atuadores
-boolean bombaDeCirculacaoFuncionando;
-boolean bombaDeExaustaoFuncionando;
-boolean ebulidorFuncionando;
-boolean valvulaFuncionando;
-boolean ebulidorFuncionandoOld;
+bool bombaDeCirculacaoFuncionando;
+bool bombaDeExaustaoFuncionando;
+bool ebulidorFuncionando;
+bool valvulaFuncionando;
+bool ebulidorFuncionandoOld;
 
 // Estado do time
-boolean timerLigado;
-#define tempoAquecido 300000000 // 5 minutos
-#define tempoExaustao  45000000 // 45 segundos
-#define tempoExague   300000000 // 5 minutos
+bool timerLigado;
+unsigned int tempoAquecido = 300; // 5 minutos
+unsigned int tempoExaustao  = 20; // 20 segundos
+unsigned int tempoExague = 300; // 5 minutos
+volatile unsigned int volatileContadorTimerAquecido; 
+volatile unsigned int volatileContadorTimerExaustao;
+volatile unsigned int volatileContadorTimerExague;
+unsigned int contadorTimerAquecido; 
+unsigned int contadorTimerExaustao;
+unsigned int contadorTimerExague;
+bool timerAquecido; 
+bool timerExaustao;
+bool timerExague;
 
 // variaveis de estado
-volatile byte estadoAtual;
-volatile byte estadoAnterior;
+byte estadoAtual;
+byte estadoAnterior;
 
 // Timer
-auto timer = timer_create_default(); // create a timer with default settings
-volatile bool primeiraChamadaDoTimer3;
-volatile bool primeiraChamadaDoTimer4;
+// auto timer = timer_create_default(); // create a timer with default settings
 
 // liga e desliga atuadores
 void desligaBombaDeCirculacao(){
@@ -148,16 +156,6 @@ void setState(int estado){
   Serial.print("\n");
 }
 
-void entraEstadoDesligado_Timer4(){
-  if(primeiraChamadaDoTimer4) {
-    primeiraChamadaDoTimer4 = false;
-  }else {
-    Timer4.detachInterrupt();
-    entraEstadoDesligado();
-  }
-
-}
-
 // funcoes de entradas dos estados
 void entraEstadoDesligado(){
   
@@ -188,30 +186,12 @@ void entraEstadoPausado(){
   telaPausado();
 }
 
-void entraEstadoEncher_2_Timer4(){
-  if(primeiraChamadaDoTimer4) {
-    primeiraChamadaDoTimer4 = false;
-  }else {
-    Timer4.detachInterrupt();
-    entraEstadoEncher(ENCHER_2);
-  }
-}
-
-void entraEstadoEncher_3_Timer4(){
-  if(primeiraChamadaDoTimer4) {
-    primeiraChamadaDoTimer4 = false;
-  }else {
-    Timer4.detachInterrupt();
-    entraEstadoEncher(ENCHER_3);
-  }
-}
-
 void entraEstadoEncher(int estado){
   Serial.print("Entrando no estado Encher: ");
   Serial.print(estado);
   Serial.print("\n");
   // configura o timer como desligado
-  if (estado = ENCHER_1){
+  if (estado == ENCHER_1){
     timerLigado = false;
     Serial.print("timerLigado = false\n");
   }
@@ -236,7 +216,9 @@ void entraEstadoAspergir(int estado){
   switch(estado){
     case ENXAGUE_1:
       Serial.print("Ligando timer para acabar enxague\n");
-      timer.in(tempoExague, entraEstadoEsvaziar,ESVAZIAR_2);
+      timerExague = true;
+      volatileContadorTimerExague = 0;
+      //timer.in(tempoExague, entraEstadoEsvaziar,ESVAZIAR_2);
       //primeiraChamadaDoTimer3 = true;
       //Timer3.initialize(tempoExague);
       //Timer3.attachInterrupt(entraEstadoEsvaziar_2_Timer3);
@@ -272,31 +254,15 @@ void entraEstadoAquecer(int estado){
   telaLigado();
 }
 
-void entraEstadoEsvaziar_1_Timer3(){
-  if(primeiraChamadaDoTimer3) {
-    primeiraChamadaDoTimer3 = false;
-  }else {
-    Timer3.detachInterrupt();
-    entraEstadoEsvaziar(ESVAZIAR_1);
-  }
-}
-
-void entraEstadoEsvaziar_2_Timer3(){
-  if(primeiraChamadaDoTimer3) {
-    primeiraChamadaDoTimer3 = false;
-  }else {
-    Timer3.detachInterrupt();
-    entraEstadoEsvaziar(ESVAZIAR_2);
-  }
-}
-
 void entraEstadoEsvaziar(int estado){
   Serial.print("Entrando no estado Esvaziar: ");
   Serial.print(estado);
   Serial.print("\n");
 
   Serial.print("Ligando timer para desligar bomba de exaustao\n");
-  switch(estado){
+  timerExaustao = true;
+  volatileContadorTimerExaustao = 0;
+  /*switch(estado){
     case ESVAZIAR_1:
       primeiraChamadaDoTimer4 = true;
       Timer4.initialize(tempoExaustao);
@@ -318,7 +284,7 @@ void entraEstadoEsvaziar(int estado){
       Serial.print(" ativado\n");
       //timer.in(tempoExaustao, entraEstadoDesligado);
       break;
-  }
+  }*/
 
   // configura estados
   setState(estado);
@@ -417,10 +383,28 @@ void lerTemperatura(){
   Serial.print("Estado atual: ");
   Serial.print(estadoAtual);
   Serial.print("\n");
+  if (timerAquecido){
+      volatileContadorTimerAquecido++;
+      Serial.print("Timer Aquecido : ");
+      Serial.print(volatileContadorTimerAquecido);
+      Serial.print("\n");
+  }
+  if (timerExaustao){
+      volatileContadorTimerExaustao++;
+      Serial.print("Timer Exaustao : ");
+      Serial.print(volatileContadorTimerExaustao);
+      Serial.print("\n");
+  }
+  if (timerExague){
+      volatileContadorTimerExague++;
+      Serial.print("Timer Enxague : ");
+      Serial.print(volatileContadorTimerExague);
+      Serial.print("\n");
+  }
 }
 
 void lerNivel(){
-  cheio = (digitalRead(nivel) == HIGH);
+  volatileCheio = (digitalRead(nivel) == HIGH);
 }
 
 void atualizaTemperatura(){
@@ -535,11 +519,15 @@ void setup() {
   // Inicia o Timer3 para ser usado em temporizadores da lavagem
   //Timer3.initialize(36000000000); // uma hora, tempo infinito
   // Inicia o Timer4 para ser usado em temporizadores do enchague
-  Timer4.initialize(36000000000); // uma hora, tempo infinito
+  //Timer4.initialize(36000000000); // uma hora, tempo infinito
+  timerAquecido = false; 
+  timerExaustao = false;
+  timerExague = false;
 
   // Nivel
   cheio = false;
   cheioOld = false;
+  volatileCheio = false;
   pinMode(nivel, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(nivel), lerNivel, CHANGE);
   //timer.every(1000, lerNivel);
@@ -573,9 +561,13 @@ void setup() {
 void loop() {
 
   // Copia valores lidos pelas interrupcoes
-  //noInterrupts();
+  noInterrupts();
+  cheio = volatileCheio;
+  contadorTimerAquecido = volatileContadorTimerAquecido;
+  contadorTimerExaustao = volatileContadorTimerExaustao;
+  contadorTimerExague = volatileContadorTimerExague;
   //float temperaturaCopy = temperatura;
-  //interrupts();
+  interrupts();
 
   // Atualiza tela com valores que mudaram
   atualizaTemperatura();
@@ -613,6 +605,10 @@ void loop() {
       if ( temperatura < MINTEMPERATURE ){
         entraEstadoAquecer(AQUECER_1);
       }
+      if (contadorTimerAquecido > tempoAquecido) {
+          timerAquecido = false;
+          entraEstadoEsvaziar(ESVAZIAR_1);
+      }
       if (botaoDireitoPressionado()){
         entraEstadoPausado();
       }
@@ -622,18 +618,28 @@ void loop() {
         if( !timerLigado ) {
           timerLigado = true;
           Serial.print("timerligado = true\n");
+          timerAquecido = true;
+          volatileContadorTimerAquecido = 0;
           //primeiraChamadaDoTimer3 = true;
           //Timer3.initialize(tempoAquecido);
           //Timer3.attachInterrupt(entraEstadoEsvaziar_1_Timer3);
-          timer.in(tempoAquecido, entraEstadoEsvaziar,ESVAZIAR_1);
+          //timer.in(tempoAquecido, entraEstadoEsvaziar,ESVAZIAR_1);
         }
         entraEstadoAspergir(LAVAR);
+      }
+      if (contadorTimerAquecido > tempoAquecido) {
+          timerAquecido = false;
+          entraEstadoEsvaziar(ESVAZIAR_1);
       }
       if (botaoDireitoPressionado()){
         entraEstadoPausado();
       }
       break;
      case ESVAZIAR_1:
+      if (contadorTimerExaustao > tempoExaustao) {
+          timerExaustao = false;
+          entraEstadoEncher(ENCHER_2);
+      }
       if (botaoDireitoPressionado()){
         entraEstadoPausado();
       }
@@ -647,11 +653,24 @@ void loop() {
       }
       break;
      case ENXAGUE_1:
+      /*Serial.print("contadorTimerExague : ");
+      Serial.print(contadorTimerExague);
+      Serial.print(" - tempoExague : ");
+      Serial.print(tempoExague);
+      Serial.print("\n");*/
+      if (contadorTimerExague > tempoExague) {
+          timerExague = false;
+          entraEstadoEsvaziar(ESVAZIAR_2);
+      }
       if (botaoDireitoPressionado()){
         entraEstadoPausado();
       }
       break;
      case ESVAZIAR_2:
+      if (contadorTimerExaustao > tempoExaustao) {
+          timerExaustao = false;
+          entraEstadoEncher(ENCHER_3);
+      }
       if (botaoDireitoPressionado()){
         entraEstadoPausado();
       }
@@ -681,6 +700,10 @@ void loop() {
       }
       break;
      case ESVAZIAR_3:
+      if (contadorTimerExaustao > tempoExaustao) {
+          timerExaustao = false;
+          entraEstadoDesligado();
+      }
       if (botaoDireitoPressionado()){
         entraEstadoPausado();
       }
