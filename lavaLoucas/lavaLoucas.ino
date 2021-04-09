@@ -8,19 +8,38 @@
 //#include <TimerFour.h>
 
 // Definicao de estados
-#define DESLIGADO 1
-#define ENCHER_1 2
-#define LAVAR 3
-#define AQUECER_1 4
-#define ESVAZIAR_1 5
-#define ENCHER_2 6
-#define ENXAGUE_1 7
-#define ESVAZIAR_2 8
-#define ENCHER_3 9
-#define ENXAGUE_2 10
-#define AQUECER_2 11
-#define ESVAZIAR_3 12
-#define PAUSADO 13
+#define DESLIGADO 0
+#define ENCHER_1 1
+#define LAVAR 2
+#define AQUECER_1 3
+#define ESVAZIAR_1 4
+#define ENCHER_2 5
+#define ENXAGUE_1 6
+#define ESVAZIAR_2 7
+#define ENCHER_3 8
+#define ENXAGUE_2 9
+#define AQUECER_2 10
+#define ESVAZIAR_3 11
+#define PAUSADO 12
+
+#define ARRAYSIZE 15
+
+String estados[ARRAYSIZE] = {
+  "DESLIGADO",
+  "ENCHER_1",
+  "LAVAR",
+  "AQUECER_1",
+  "ESVAZIAR_1",
+  "ENCHER_2",
+  "ENXAGUE_1",
+  "ESVAZIAR_2",
+  "ENCHER_3",
+  "ENXAGUE_2",
+  "AQUECER_2",
+  "ESVAZIAR_3",
+  "PAUSADO",
+  
+};
 
 // Cores que iremos utilizar em nosso projeto
 #define PRETO   0x0000
@@ -205,7 +224,7 @@ void entraEstadoEncher(int estado){
   desligaEbulidor();
   ligaValvula();
 
-  telaLigado();
+  telaLigado(estadoAtual);
 }
 
 void entraEstadoAspergir(int estado){
@@ -234,7 +253,7 @@ void entraEstadoAspergir(int estado){
   desligaEbulidor();
   desligaValvula();
 
-  telaLigado();
+  telaLigado(estadoAtual);
 }
 
 void entraEstadoAquecer(int estado){
@@ -251,7 +270,7 @@ void entraEstadoAquecer(int estado){
   ligaEbulidor();
   desligaValvula();
   
-  telaLigado();
+  telaLigado(estadoAtual);
 }
 
 void entraEstadoEsvaziar(int estado){
@@ -295,7 +314,7 @@ void entraEstadoEsvaziar(int estado){
   desligaEbulidor();
   desligaValvula();
 
-  telaLigado();
+  telaLigado(estadoAtual);
 }
 
 bool botaoDireitoPressionado(){
@@ -350,10 +369,10 @@ void telaDesligado(){
   criarBotao(170,200,120,30,"Ligar",VERMELHO); // Direita
 }
 
-void telaLigado(){
+void telaLigado(int estado){
   tft.setRotation(3); // Display é rotacionado para modo paisagem
   tft.fillScreen(PRETO); // Tela  é preenchida pela cor Branca
-  escreveTexto(50,0,"Em Operacao",3,BRANCO); // Texto é escrito na posição (50,0)
+  escreveTexto(50,0,estados[estado],3,BRANCO); // Texto é escrito na posição (50,0)
   escreveTexto(50,50,"Temperatura:",2,VERDE); // Texto é escrito na posição (50,0)
   escreveTexto(50,70,"Nivel: baixo",2,VERDE); // Texto é escrito na posição (50,0)
   escreveTexto(50,90,"Aquecimento: desligado",2,VERDE); // Texto é escrito na posição (50,0)
