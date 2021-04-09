@@ -87,6 +87,12 @@ volatile bool volatileCheio;
 bool cheio;
 bool cheioOld;
 
+// Porta aberta
+int portaPin = 20;
+volatile bool volatilePortaAberta;
+bool portaAberta;
+bool portaAbertaOld;
+
 
 // pino dos atuadores
 const int bombaCirculacao = 22;
@@ -426,12 +432,29 @@ void lerNivel(){
   volatileCheio = (digitalRead(nivel) == HIGH);
 }
 
+void lerPortaAberta(){
+  portaAberta = (digitalRead(portaPin) == HIGH);
+}
+
 void atualizaTemperatura(){
   if (temperatura != temperaturaOld){
     //Serial.print("Temperatura: " + tempString + "\n");
     temperaturaOld = temperatura;
     tft.fillRect(200,50, 60, 20, PRETO);
     escreveTexto(200,50,String(temperatura),2,VERDE); // Texto é escrito na posição (50,0)
+  }
+
+}
+
+void atualizaPortaAberta(){
+  if (portaAberta != portaAbertaOld){
+    Serial.print("Porta Aberta: " + String(portaAberta) + "\n");
+    portaAbertaOld = portaAberta;
+    if (portaAberta) {
+      entraEstadoPausado();
+    } else {
+      retornaDeEstadoPausado();
+    }
   }
 
 }
@@ -551,6 +574,13 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(nivel), lerNivel, CHANGE);
   //timer.every(1000, lerNivel);
 
+  // Porta Aberta
+  portaAberta = false;
+  portaAbertaOld = false;
+  volatilePortaAberta = false;
+  pinMode(portaPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(portaPin), lerPortaAberta, CHANGE);
+
   // Ebulidor
   ebulidorFuncionando = false;
   ebulidorFuncionandoOld = false;
@@ -582,6 +612,7 @@ void loop() {
   // Copia valores lidos pelas interrupcoes
   noInterrupts();
   cheio = volatileCheio;
+  portaAberta = volatilePortaAberta;
   contadorTimerAquecido = volatileContadorTimerAquecido;
   contadorTimerExaustao = volatileContadorTimerExaustao;
   contadorTimerExague = volatileContadorTimerExague;
@@ -592,6 +623,7 @@ void loop() {
   atualizaTemperatura();
   atualizaNivel(cheio);
   atualizaAquecimento();
+  atualizaPortaAberta();
   
   // put your main code here, to run repeatedly:
   /*Serial.print("Graus C = "); 
