@@ -116,6 +116,7 @@ unsigned int tempoExague = 300; // 5 minutos
 volatile unsigned int volatileContadorTimerAquecido; 
 volatile unsigned int volatileContadorTimerExaustao;
 volatile unsigned int volatileContadorTimerExague;
+volatile unsigned int volatileContadorPortaAberta;
 unsigned int contadorTimerAquecido; 
 unsigned int contadorTimerExaustao;
 unsigned int contadorTimerExague;
@@ -406,8 +407,9 @@ void escreveTexto(int posx,int posy, String texto,int tamanho,int cor){ // Funç
 void lerTemperatura(){
   temperatura = (byte) sensor.readCelsius();
   Serial.print("Estado atual: ");
-  Serial.print(estadoAtual);
+  Serial.print(estados[estadoAtual]);
   Serial.print("\n");
+  volatileContadorPortaAberta++;
   if (timerAquecido){
       volatileContadorTimerAquecido++;
       Serial.print("Timer Aquecido : ");
@@ -433,7 +435,20 @@ void lerNivel(){
 }
 
 void lerPortaAberta(){
-  portaAberta = (digitalRead(portaPin) == LOW);
+  Serial.print("Estado do pino Porta Aberta: ");
+  Serial.println(String(digitalRead(portaPin)));
+  Serial.print("Contador Porta Aberta: ");
+  Serial.println(volatileContadorPortaAberta);
+  if (volatileContadorPortaAberta > 2){
+    volatileContadorPortaAberta = 0;
+    delay(100);
+    volatilePortaAberta = (digitalRead(portaPin) == HIGH);
+    if(volatilePortaAberta){
+      Serial.println("Porta aberta" );
+    } else{
+      Serial.println("Porta fechada" );
+    }
+  }
 }
 
 void atualizaTemperatura(){
@@ -580,6 +595,7 @@ void setup() {
   volatilePortaAberta = false;
   pinMode(portaPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(portaPin), lerPortaAberta, CHANGE);
+  volatileContadorPortaAberta = 0;
 
   // Ebulidor
   ebulidorFuncionando = false;
