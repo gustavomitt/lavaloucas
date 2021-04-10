@@ -433,7 +433,7 @@ void lerNivel(){
 }
 
 void lerPortaAberta(){
-  portaAberta = (digitalRead(portaPin) == HIGH);
+  portaAberta = (digitalRead(portaPin) == LOW);
 }
 
 void atualizaTemperatura(){
