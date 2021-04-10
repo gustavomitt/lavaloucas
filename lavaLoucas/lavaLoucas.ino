@@ -2,7 +2,7 @@
 #include <MCUFRIEND_kbv.h> // Bibllioteca para controle do lcd 
 #include <TouchScreen.h>
 #include "max6675.h"
-#include <arduino-timer.h>
+//#include <arduino-timer.h>
 #include <TimerOne.h>
 //#include <TimerThree.h>
 //#include <TimerFour.h>
