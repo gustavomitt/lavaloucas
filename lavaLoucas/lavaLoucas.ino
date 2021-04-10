@@ -59,7 +59,7 @@ TSPoint tp;
 #define MAXPRESSURE 1000
 
 
-volatile MCUFRIEND_kbv tft; // Objeto  de comunicação com  display
+MCUFRIEND_kbv tft; // Objeto  de comunicação com  display
 
 // Inicializa termopar
 int thermo_gnd_pin = 45;
