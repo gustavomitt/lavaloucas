@@ -67,11 +67,19 @@ MCUFRIEND_kbv tft; // Objeto  de comunicação com  display
 //int thermo_so_pin  = 53;
 //int thermo_cs_pin  = 51;
 //int thermo_sck_pin = 49;
-int thermo_gnd_pin = 44;
-int thermo_vcc_pin = 46;
-int thermo_so_pin  = 52;
-int thermo_cs_pin  = 50;
-int thermo_sck_pin = 48;
+
+int thermo_gnd_pin = 53;
+int thermo_vcc_pin = 51;
+int thermo_sck_pin = 49;
+int thermo_cs_pin  = 47;
+int thermo_so_pin  = 45;
+
+
+//int thermo_gnd_pin = 44;
+//int thermo_vcc_pin = 46;
+//int thermo_so_pin  = 52;
+//int thermo_cs_pin  = 50;
+//int thermo_sck_pin = 48;
   
 MAX6675 sensor(thermo_sck_pin, thermo_cs_pin, thermo_so_pin);
 
