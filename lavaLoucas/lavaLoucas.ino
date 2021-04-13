@@ -41,6 +41,11 @@ String estados[ARRAYSIZE] = {
   
 };
 
+
+// Comandos da serial
+int incomeByte = 0; // 1: encher - 2: pausar - 3: esvaziar
+
+
 // Cores que iremos utilizar em nosso projeto
 #define PRETO   0x0000
 #define VERMELHO     0xF800
@@ -342,9 +347,9 @@ bool botaoDireitoPressionado(){
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
   if (tp.z > MINPRESSURE && tp.z < MAXPRESSURE){
-    /*Serial.print("tp.x=" + String(tp.x) + "\n");
+    Serial.print("tp.x=" + String(tp.x) + "\n");
     Serial.print("tp.y=" + String(tp.y) + "\n");
-    Serial.print("tp.z=" + String(tp.z) + "\n");*/
+    Serial.print("tp.z=" + String(tp.z) + "\n");
 
     if (tp.x > 650 && tp.x < 900  && tp.y > 750 && tp.y < 870) {
       //tft.fillScreen(PRETO);
@@ -661,6 +666,23 @@ void loop() {
   delay(500);*/
 
   //timer.tick(); // tick the timer
+
+  // Le comandos da serial
+  if (Serial.available() > 0) {
+    incomeByte = int(Serial.read());
+    Serial.println("Entrada na serial: " + String(incomeByte));
+    switch (incomeByte){
+      case 49:
+        entraEstadoEncher(ENCHER_1);
+        break;
+      case 50:
+        entraEstadoPausado();
+        break;
+      case 51:
+        entraEstadoEsvaziar(ESVAZIAR_3);
+        break;
+    }
+  }
   
   //Serial.print("Estado: " + String(estado) + "\n");
   switch (estadoAtual){
