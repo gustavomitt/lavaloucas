@@ -1,6 +1,6 @@
 #include "Adafruit_GFX.h" // Biblioteca Gráfica Adafruit
 #include <MCUFRIEND_kbv.h> // Bibllioteca para controle do lcd 
-#include <TouchScreen.h>
+//#include <TouchScreen.h>
 #include "max6675.h"
 //#include <arduino-timer.h>
 #include <TimerOne.h>
@@ -54,11 +54,11 @@ int incomeByte = 0; // 1: encher - 2: pausar - 3: esvaziar
 #define AZUL 0x001F
 
 // Objetos do touchscreen
-const int XP=7,XM=A1,YP=A2,YM=6; //320x480 ID=0x0000
-const int TS_LEFT=496,TS_RT=467,TS_TOP=439,TS_BOT=464;
+//const int XP=7,XM=A1,YP=A2,YM=6; //320x480 ID=0x0000
+//const int TS_LEFT=496,TS_RT=467,TS_TOP=439,TS_BOT=464;
 
-TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
-TSPoint tp;
+//TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+//TSPoint tp;
 
 #define MINPRESSURE 200
 #define MAXPRESSURE 1000
@@ -111,6 +111,16 @@ volatile bool volatilePortaAberta;
 bool portaAberta;
 bool portaAbertaOld;
 
+// Botao Preto
+int botaoPretoPin = 19;
+volatile bool volatileBotaoPretoPressionado;
+bool botaoPretoPressionado;
+
+// Botao Amarelo
+int botaoAmareloPin = 18;
+volatile bool volatileBotaoAmareloPressionado;
+bool botaoAmareloPressionado;
+
 
 // pino dos atuadores
 const int bombaCirculacao = 22;
@@ -135,6 +145,8 @@ volatile unsigned int volatileContadorTimerAquecido;
 volatile unsigned int volatileContadorTimerExaustao;
 volatile unsigned int volatileContadorTimerExague;
 volatile unsigned int volatileContadorPortaAberta;
+volatile unsigned int volatileContadorBotaoPretoPressionado;
+volatile unsigned int volatileContadorBotaoAmareloPressionado;
 unsigned int contadorTimerAquecido; 
 unsigned int contadorTimerExaustao;
 unsigned int contadorTimerExague;
@@ -342,8 +354,9 @@ void entraEstadoEsvaziar(int estado){
   telaLigado(estadoAtual);
 }
 
+
 bool botaoDireitoPressionado(){
-  tp = ts.getPoint();
+  /*tp = ts.getPoint();
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
   if (tp.z > MINPRESSURE && tp.z < MAXPRESSURE){
@@ -360,17 +373,23 @@ bool botaoDireitoPressionado(){
       return true;
     }
   }
-  return false;
+  return false;*/
+  if (botaoPretoPressionado) {
+    botaoPretoPressionado = false;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 bool botaoEsquerdoPressionado(){
-  tp = ts.getPoint();
+  /*tp = ts.getPoint();
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
   if (tp.z > MINPRESSURE && tp.z < MAXPRESSURE){
-    /*Serial.print("tp.x=" + String(tp.x) + "\n");
+    Serial.print("tp.x=" + String(tp.x) + "\n");
     Serial.print("tp.y=" + String(tp.y) + "\n");
-    Serial.print("tp.z=" + String(tp.z) + "\n");*/
+    Serial.print("tp.z=" + String(tp.z) + "\n");
     if (tp.x > 0 && tp.x < 500  && tp.y > 750 && tp.y < 870) {
       //tft.fillScreen(PRETO);
       //tft.setTextSize(2);
@@ -380,8 +399,16 @@ bool botaoEsquerdoPressionado(){
       return true;
     }
   }
-  return false;
+  return false;*/
+  if (botaoAmareloPressionado) {
+    botaoAmareloPressionado = false;
+    return true;
+  } else {
+    return false;
+  }
+
 }
+
 
 void telaDesligado(){
   tft.setRotation(3); // Display é rotacionado para modo paisagem
@@ -468,6 +495,25 @@ void lerPortaAberta(){
     }
   }
 }
+
+void funcaoBotaoPreto() {
+  if (volatileContadorBotaoPretoPressionado > 2){
+    volatileContadorBotaoPretoPressionado = 0;
+    Serial.print("Botao preto (direito) pressionado ");
+    volatileBotaoPretoPressionado = true;
+  }
+}
+
+void funcaoBotaoAmarelo() {
+  if (volatileContadorBotaoAmareloPressionado > 2){
+    volatileContadorBotaoAmareloPressionado = 0;
+    Serial.print("Botao amarelo (esquerdo) pressionado ");
+    volatileBotaoAmareloPressionado = true;
+  }
+}
+
+
+
 
 void atualizaTemperatura(){
   if (temperatura != temperaturaOld){
@@ -587,6 +633,18 @@ void setup() {
   pinMode(thermo_gnd_pin, OUTPUT); 
   digitalWrite(thermo_vcc_pin, HIGH);
   digitalWrite(thermo_gnd_pin, LOW);
+
+  // Inicia botoes
+  volatileContadorBotaoPretoPressionado = 0;
+  volatileContadorBotaoAmareloPressionado = 0;
+  botaoPretoPressionado = false;
+  botaoAmareloPressionado = false;
+  pinMode(botaoPretoPin, INPUT);
+  pinMode(botaoAmareloPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(botaoPretoPin), funcaoBotaoPreto, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(botaoAmareloPin), funcaoBotaoAmarelo, RISING);
+
+  
   
   // chama ler temperatura a cada 1000 millis (1 second)
   Timer1.initialize(1000000);
@@ -650,6 +708,8 @@ void loop() {
   contadorTimerAquecido = volatileContadorTimerAquecido;
   contadorTimerExaustao = volatileContadorTimerExaustao;
   contadorTimerExague = volatileContadorTimerExague;
+  botaoPretoPressionado = volatileBotaoPretoPressionado;
+  botaoAmareloPressionado = volatileBotaoAmareloPressionado;
   //float temperaturaCopy = temperatura;
   interrupts();
 
