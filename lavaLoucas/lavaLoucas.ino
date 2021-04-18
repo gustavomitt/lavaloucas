@@ -378,6 +378,7 @@ bool botaoDireitoPressionado(){
   return false;*/
   if (botaoPretoPressionado != botaoPretoPressionadoOld) {
     botaoPretoPressionadoOld = botaoPretoPressionado;
+    Serial.println("Botao direito pressionado");
     return true;
   } else {
     return false;
@@ -404,6 +405,7 @@ bool botaoEsquerdoPressionado(){
   return false;*/
   if (botaoAmareloPressionado != botaoAmareloPressionadoOld) {
     botaoAmareloPressionadoOld = botaoAmareloPressionado;
+    Serial.println("Botao esquerdo pressionado");
     return true;
   } else {
     return false;
