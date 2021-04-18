@@ -375,6 +375,7 @@ bool botaoDireitoPressionado(){
   }
   return false;*/
   if (botaoPretoPressionado) {
+    volatileBotaoPretoPressionado = false;
     botaoPretoPressionado = false;
     return true;
   } else {
@@ -401,6 +402,7 @@ bool botaoEsquerdoPressionado(){
   }
   return false;*/
   if (botaoAmareloPressionado) {
+    volatileBotaoAmareloPressionado = false;
     botaoAmareloPressionado = false;
     return true;
   } else {
@@ -455,6 +457,8 @@ void lerTemperatura(){
   Serial.print(estados[estadoAtual]);
   Serial.print("\n");
   volatileContadorPortaAberta++;
+  volatileContadorBotaoPretoPressionado++;
+  volatileContadorBotaoAmareloPressionado++;
   if (timerAquecido){
       volatileContadorTimerAquecido++;
       Serial.print("Timer Aquecido : ");
