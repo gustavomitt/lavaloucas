@@ -113,13 +113,15 @@ bool portaAbertaOld;
 
 // Botao Preto
 int botaoPretoPin = 19;
-volatile bool volatileBotaoPretoPressionado;
-bool botaoPretoPressionado;
+volatile int volatileBotaoPretoPressionado;
+int botaoPretoPressionado;
+int botaoPretoPressionadoOld;
 
 // Botao Amarelo
 int botaoAmareloPin = 18;
-volatile bool volatileBotaoAmareloPressionado;
-bool botaoAmareloPressionado;
+volatile int volatileBotaoAmareloPressionado;
+int botaoAmareloPressionado;
+int botaoAmareloPressionadoOld;
 
 
 // pino dos atuadores
@@ -374,9 +376,8 @@ bool botaoDireitoPressionado(){
     }
   }
   return false;*/
-  if (botaoPretoPressionado) {
-    volatileBotaoPretoPressionado = false;
-    botaoPretoPressionado = false;
+  if (botaoPretoPressionado != botaoPretoPressionadoOld) {
+    botaoPretoPressionadoOld = botaoPretoPressionado;
     return true;
   } else {
     return false;
@@ -401,9 +402,8 @@ bool botaoEsquerdoPressionado(){
     }
   }
   return false;*/
-  if (botaoAmareloPressionado) {
-    volatileBotaoAmareloPressionado = false;
-    botaoAmareloPressionado = false;
+  if (botaoAmareloPressionado != botaoAmareloPressionadoOld) {
+    botaoAmareloPressionadoOld = botaoAmareloPressionado;
     return true;
   } else {
     return false;
@@ -504,7 +504,8 @@ void funcaoBotaoPreto() {
   if (volatileContadorBotaoPretoPressionado > 2){
     volatileContadorBotaoPretoPressionado = 0;
     Serial.print("Botao preto (direito) pressionado ");
-    volatileBotaoPretoPressionado = true;
+    delay(100);
+    volatileBotaoPretoPressionado = digitalRead(botaoPretoPin);
   }
 }
 
@@ -512,7 +513,8 @@ void funcaoBotaoAmarelo() {
   if (volatileContadorBotaoAmareloPressionado > 2){
     volatileContadorBotaoAmareloPressionado = 0;
     Serial.print("Botao amarelo (esquerdo) pressionado ");
-    volatileBotaoAmareloPressionado = true;
+    delay(100);
+    volatileBotaoAmareloPressionado = digitalRead(botaoAmareloPin);
   }
 }
 
@@ -641,12 +643,14 @@ void setup() {
   // Inicia botoes
   volatileContadorBotaoPretoPressionado = 0;
   volatileContadorBotaoAmareloPressionado = 0;
-  botaoPretoPressionado = false;
-  botaoAmareloPressionado = false;
   pinMode(botaoPretoPin, INPUT);
   pinMode(botaoAmareloPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(botaoPretoPin), funcaoBotaoPreto, CHANGE);
   attachInterrupt(digitalPinToInterrupt(botaoAmareloPin), funcaoBotaoAmarelo, RISING);
+  botaoPretoPressionado = digitalRead(botaoPretoPin);
+  botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
+  botaoPretoPressionadoOld = botaoPretoPressionado;
+  botaoAmareloPressionadoOld = botaoAmareloPressionado;
 
   
   
