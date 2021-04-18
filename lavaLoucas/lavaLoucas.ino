@@ -505,7 +505,7 @@ void lerPortaAberta(){
 void funcaoBotaoPreto() {
   if (volatileContadorBotaoPretoPressionado > 2){
     volatileContadorBotaoPretoPressionado = 0;
-    Serial.print("Botao preto (direito) pressionado ");
+    Serial.println("Botao preto (direito) disparado ");
     delay(100);
     volatileBotaoPretoPressionado = digitalRead(botaoPretoPin);
   }
@@ -514,7 +514,7 @@ void funcaoBotaoPreto() {
 void funcaoBotaoAmarelo() {
   if (volatileContadorBotaoAmareloPressionado > 2){
     volatileContadorBotaoAmareloPressionado = 0;
-    Serial.print("Botao amarelo (esquerdo) pressionado ");
+    Serial.println("Botao amarelo (esquerdo) disparado ");
     delay(100);
     volatileBotaoAmareloPressionado = digitalRead(botaoAmareloPin);
   }
@@ -649,6 +649,7 @@ void setup() {
   pinMode(botaoAmareloPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(botaoPretoPin), funcaoBotaoPreto, CHANGE);
   attachInterrupt(digitalPinToInterrupt(botaoAmareloPin), funcaoBotaoAmarelo, RISING);
+  delay(500);
   botaoPretoPressionado = digitalRead(botaoPretoPin);
   botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
   botaoPretoPressionadoOld = botaoPretoPressionado;
