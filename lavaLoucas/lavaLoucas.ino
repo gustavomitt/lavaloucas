@@ -237,10 +237,10 @@ void entraEstadoDesligado(){
   botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
   botaoPretoPressionadoOld = botaoPretoPressionado;
   botaoAmareloPressionadoOld = botaoAmareloPressionado;
-  Serial.print("Estado do botao preto: ")
-  Serial.println(botaoPretoPressionado)
-  Serial.print("Estado do botao amarelo: ")
-  Serial.println(botaoPretoPressionado)
+  Serial.print("Estado do botao preto: ");
+  Serial.println(botaoPretoPressionado);
+  Serial.print("Estado do botao amarelo: ");
+  Serial.println(botaoPretoPressionado);
   // Timers
   timerAquecido = false; 
   timerExaustao = false;
@@ -542,8 +542,8 @@ void funcaoBotaoPreto() {
     Serial.println("Botao preto (direito) disparado ");
     delay(200);
     volatileBotaoPretoPressionado = digitalRead(botaoPretoPin);
-    Serial.print("Estado do botao preto: ")
-    Serial.println(volatileBotaoPretoPressionado)
+    Serial.print("Estado do botao preto: ");
+    Serial.println(volatileBotaoPretoPressionado);
   }
 }
 
@@ -554,8 +554,8 @@ void funcaoBotaoAmarelo() {
     Serial.println("Botao amarelo (esquerdo) disparado ");
     delay(200);
     volatileBotaoAmareloPressionado = digitalRead(botaoAmareloPin);
-    Serial.print("Estado do botao amarelo: ")
-    Serial.println(volatileBotaoAmareloPressionado)
+    Serial.print("Estado do botao amarelo: ");
+    Serial.println(volatileBotaoAmareloPressionado);
   }
 }
 
