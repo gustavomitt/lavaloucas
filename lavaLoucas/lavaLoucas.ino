@@ -237,10 +237,16 @@ void entraEstadoDesligado(){
   botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
   botaoPretoPressionadoOld = botaoPretoPressionado;
   botaoAmareloPressionadoOld = botaoAmareloPressionado;
+  volatileBotaoPretoPressionado = botaoPretoPressionado;
+  volatileBotaoAmareloPressionado = botaoAmareloPressionado;
   Serial.print("Estado do botao preto: ");
   Serial.println(botaoPretoPressionado);
   Serial.print("Estado do botao amarelo: ");
   Serial.println(botaoPretoPressionado);
+  Serial.print("Estado do botao preto old: ");
+  Serial.println(botaoPretoPressionadoOld);
+  Serial.print("Estado do botao amarelo old: ");
+  Serial.println(botaoPretoPressionadoOld);
   // Timers
   timerAquecido = false; 
   timerExaustao = false;
@@ -436,6 +442,14 @@ bool botaoEsquerdoPressionado(){
     }
   }
   return false;*/
+  /*Serial.print("Estado do botao amarelo na funcao botaoEsquerdoPressionado: ");
+  Serial.println(botaoAmareloPressionado);
+  Serial.print("Estado do botao amarelo old na funcao botaoEsquerdoPressionado: ");
+  Serial.println(botaoAmareloPressionadoOld);
+  Serial.print("Estado atual diferente do anterior? ");
+  Serial.println(botaoAmareloPressionado != botaoAmareloPressionadoOld);
+  */
+  
   if (botaoAmareloPressionado != botaoAmareloPressionadoOld) {
     botaoAmareloPressionadoOld = botaoAmareloPressionado;
     Serial.println("Botao esquerdo pressionado");
@@ -686,13 +700,13 @@ void setup() {
   volatileContadorBotaoAmareloPressionado = 0;
   pinMode(botaoPretoPin, INPUT);
   pinMode(botaoAmareloPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(botaoPretoPin), funcaoBotaoPreto, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(botaoAmareloPin), funcaoBotaoAmarelo, RISING);
-  delay(500);
   botaoPretoPressionado = digitalRead(botaoPretoPin);
   botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
   botaoPretoPressionadoOld = botaoPretoPressionado;
   botaoAmareloPressionadoOld = botaoAmareloPressionado;
+  delay(500);
+  attachInterrupt(digitalPinToInterrupt(botaoPretoPin), funcaoBotaoPreto, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(botaoAmareloPin), funcaoBotaoAmarelo, RISING);
 
   
   
@@ -760,6 +774,8 @@ void loop() {
   contadorTimerExague = volatileContadorTimerExague;
   botaoPretoPressionado = volatileBotaoPretoPressionado;
   botaoAmareloPressionado = volatileBotaoAmareloPressionado;
+  volatileBotaoPretoPressionado = botaoPretoPressionado;
+  volatileBotaoAmareloPressionado = botaoAmareloPressionado;
   //float temperaturaCopy = temperatura;
   interrupts();
 
