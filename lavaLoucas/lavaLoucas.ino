@@ -228,6 +228,39 @@ void entraEstadoDesligado(){
   desligaValvula();
   
   telaDesligado();
+
+  // Variaveis no default
+  // Botoes
+  volatileContadorBotaoPretoPressionado = 0;
+  volatileContadorBotaoAmareloPressionado = 0;
+  botaoPretoPressionado = digitalRead(botaoPretoPin);
+  botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
+  botaoPretoPressionadoOld = botaoPretoPressionado;
+  botaoAmareloPressionadoOld = botaoAmareloPressionado;
+  Serial.print("Estado do botao preto: ")
+  Serial.println(botaoPretoPressionado)
+  Serial.print("Estado do botao amarelo: ")
+  Serial.println(botaoPretoPressionado)
+  // Timers
+  timerAquecido = false; 
+  timerExaustao = false;
+  timerExague = false;
+  // Nivel
+  cheio = false;
+  cheioOld = false;
+  volatileCheio = false;
+  //timer.every(1000, lerNivel);
+
+  // Porta Aberta
+  portaAberta = false;
+  portaAbertaOld = false;
+  volatilePortaAberta = false;
+  volatileContadorPortaAberta = 0;
+
+  // Ebulidor
+  ebulidorFuncionando = false;
+  ebulidorFuncionandoOld = false;
+
 }
 
 void entraEstadoPausado(){
@@ -505,18 +538,24 @@ void lerPortaAberta(){
 void funcaoBotaoPreto() {
   if (volatileContadorBotaoPretoPressionado > 2){
     volatileContadorBotaoPretoPressionado = 0;
+    volatileContadorBotaoAmareloPressionado = 0;
     Serial.println("Botao preto (direito) disparado ");
-    delay(100);
+    delay(200);
     volatileBotaoPretoPressionado = digitalRead(botaoPretoPin);
+    Serial.print("Estado do botao preto: ")
+    Serial.println(volatileBotaoPretoPressionado)
   }
 }
 
 void funcaoBotaoAmarelo() {
   if (volatileContadorBotaoAmareloPressionado > 2){
+    volatileContadorBotaoPretoPressionado = 0;
     volatileContadorBotaoAmareloPressionado = 0;
     Serial.println("Botao amarelo (esquerdo) disparado ");
-    delay(100);
+    delay(200);
     volatileBotaoAmareloPressionado = digitalRead(botaoAmareloPin);
+    Serial.print("Estado do botao amarelo: ")
+    Serial.println(volatileBotaoAmareloPressionado)
   }
 }
 
