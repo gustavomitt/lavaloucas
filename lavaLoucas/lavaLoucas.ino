@@ -377,7 +377,7 @@ void entraEstadoEsvaziar(int estado){
 }
 
 
-bool botaoDireitoPressionado(){
+bool verificaBotaoDireitoPressionado(){
   /*tp = ts.getPoint();
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
@@ -408,7 +408,7 @@ bool botaoDireitoPressionado(){
   }
 }
 
-bool botaoEsquerdoPressionado(){
+bool verificaBotaoEsquerdoPressionado(){
   /*tp = ts.getPoint();
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
@@ -754,8 +754,8 @@ void loop() {
   //float temperaturaCopy = temperatura;
   interrupts();
 
-  botaoEsquerdoPressionado = botaoEsquerdoPressionado();  
-  botaoDireitoPressionado = botaoDireitoPressionado();  
+  botaoEsquerdoPressionado = verificaBotaoEsquerdoPressionado();  
+  botaoDireitoPressionado = verificaBotaoDireitoPressionado();  
 
   // Atualiza tela com valores que mudaram
   atualizaTemperatura();
