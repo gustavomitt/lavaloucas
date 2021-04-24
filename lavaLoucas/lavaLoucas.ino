@@ -111,17 +111,15 @@ volatile bool volatilePortaAberta;
 bool portaAberta;
 bool portaAbertaOld;
 
-// Botao Preto
-int botaoPretoPin = 19;
-volatile int volatileBotaoPretoPressionado;
-int botaoPretoPressionado;
-int botaoPretoPressionadoOld;
+// Botao Direito
+int botaoDireitoPin = 19;
+int buttonStateDireito = HIGH;
+bool botaoDireitoPressionado = false;
 
-// Botao Amarelo
-int botaoAmareloPin = 18;
-volatile int volatileBotaoAmareloPressionado;
-int botaoAmareloPressionado;
-int botaoAmareloPressionadoOld;
+// Botao Esquerdo
+int botaoEsquerdoPin = 18;
+int buttonStateEsquerdo = HIGH;
+bool botaoEsquerdoPressionado = false;
 
 
 // pino dos atuadores
@@ -230,23 +228,6 @@ void entraEstadoDesligado(){
   telaDesligado();
 
   // Variaveis no default
-  // Botoes
-  volatileContadorBotaoPretoPressionado = 0;
-  volatileContadorBotaoAmareloPressionado = 0;
-  botaoPretoPressionado = digitalRead(botaoPretoPin);
-  botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
-  botaoPretoPressionadoOld = botaoPretoPressionado;
-  botaoAmareloPressionadoOld = botaoAmareloPressionado;
-  volatileBotaoPretoPressionado = botaoPretoPressionado;
-  volatileBotaoAmareloPressionado = botaoAmareloPressionado;
-  Serial.print("Estado do botao preto: ");
-  Serial.println(botaoPretoPressionado);
-  Serial.print("Estado do botao amarelo: ");
-  Serial.println(botaoPretoPressionado);
-  Serial.print("Estado do botao preto old: ");
-  Serial.println(botaoPretoPressionadoOld);
-  Serial.print("Estado do botao amarelo old: ");
-  Serial.println(botaoPretoPressionadoOld);
   // Timers
   timerAquecido = false; 
   timerExaustao = false;
@@ -415,9 +396,12 @@ bool botaoDireitoPressionado(){
     }
   }
   return false;*/
-  if (botaoPretoPressionado != botaoPretoPressionadoOld) {
-    botaoPretoPressionadoOld = botaoPretoPressionado;
+  buttonStateDireito = digitalRead(botaoDireitoPin);
+
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (buttonStateDireito == LOW) {
     Serial.println("Botao direito pressionado");
+    delay(500);
     return true;
   } else {
     return false;
@@ -450,9 +434,12 @@ bool botaoEsquerdoPressionado(){
   Serial.println(botaoAmareloPressionado != botaoAmareloPressionadoOld);
   */
   
-  if (botaoAmareloPressionado != botaoAmareloPressionadoOld) {
-    botaoAmareloPressionadoOld = botaoAmareloPressionado;
+  buttonStateEsquerdo = digitalRead(botaoEsquerdoPin);
+
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (buttonStateEsquerdo == LOW) {
     Serial.println("Botao esquerdo pressionado");
+    delay(500);
     return true;
   } else {
     return false;
@@ -549,7 +536,7 @@ void lerPortaAberta(){
   }
 }
 
-void funcaoBotaoPreto() {
+/*void funcaoBotaoPreto() {
   if (volatileContadorBotaoPretoPressionado > 2){
     volatileContadorBotaoPretoPressionado = 0;
     volatileContadorBotaoAmareloPressionado = 0;
@@ -572,6 +559,7 @@ void funcaoBotaoAmarelo() {
     Serial.println(volatileBotaoAmareloPressionado);
   }
 }
+*/
 
 
 
@@ -696,17 +684,8 @@ void setup() {
   digitalWrite(thermo_gnd_pin, LOW);
 
   // Inicia botoes
-  volatileContadorBotaoPretoPressionado = 0;
-  volatileContadorBotaoAmareloPressionado = 0;
-  pinMode(botaoPretoPin, INPUT);
-  pinMode(botaoAmareloPin, INPUT);
-  botaoPretoPressionado = digitalRead(botaoPretoPin);
-  botaoAmareloPressionado = digitalRead(botaoAmareloPressionado);
-  botaoPretoPressionadoOld = botaoPretoPressionado;
-  botaoAmareloPressionadoOld = botaoAmareloPressionado;
-  delay(500);
-  attachInterrupt(digitalPinToInterrupt(botaoPretoPin), funcaoBotaoPreto, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(botaoAmareloPin), funcaoBotaoAmarelo, RISING);
+  pinMode(botaoDireitoPin, INPUT_PULLUP);
+  pinMode(botaoEsquerdoPin, INPUT_PULLUP);
 
   
   
@@ -772,12 +751,11 @@ void loop() {
   contadorTimerAquecido = volatileContadorTimerAquecido;
   contadorTimerExaustao = volatileContadorTimerExaustao;
   contadorTimerExague = volatileContadorTimerExague;
-  botaoPretoPressionado = volatileBotaoPretoPressionado;
-  botaoAmareloPressionado = volatileBotaoAmareloPressionado;
-  volatileBotaoPretoPressionado = botaoPretoPressionado;
-  volatileBotaoAmareloPressionado = botaoAmareloPressionado;
   //float temperaturaCopy = temperatura;
   interrupts();
+
+  botaoEsquerdoPressionado = botaoEsquerdoPressionado();  
+  botaoDireitoPressionado = botaoDireitoPressionado();  
 
   // Atualiza tela com valores que mudaram
   atualizaTemperatura();
@@ -814,10 +792,10 @@ void loop() {
   switch (estadoAtual){
     case DESLIGADO:
       //Serial.print("Case Desligado\n");
-      if (botaoEsquerdoPressionado()){
+      if (botaoEsquerdoPressionado){
         entraEstadoEsvaziar(ESVAZIAR_3);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoEncher(ENCHER_1);
       }
       break;
@@ -825,7 +803,7 @@ void loop() {
       if(cheio){
         entraEstadoAspergir(LAVAR);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -837,7 +815,7 @@ void loop() {
           timerAquecido = false;
           entraEstadoEsvaziar(ESVAZIAR_1);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -859,7 +837,7 @@ void loop() {
           timerAquecido = false;
           entraEstadoEsvaziar(ESVAZIAR_1);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -868,7 +846,7 @@ void loop() {
           timerExaustao = false;
           entraEstadoEncher(ENCHER_2);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -876,7 +854,7 @@ void loop() {
       if(cheio){
         entraEstadoAspergir(ENXAGUE_1);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -890,7 +868,7 @@ void loop() {
           timerExague = false;
           entraEstadoEsvaziar(ESVAZIAR_2);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -899,7 +877,7 @@ void loop() {
           timerExaustao = false;
           entraEstadoEncher(ENCHER_3);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -907,7 +885,7 @@ void loop() {
       if(cheio){
         entraEstadoAspergir(ENXAGUE_2);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -915,7 +893,7 @@ void loop() {
       if ( temperatura < MINTEMPERATURE ){
         entraEstadoAquecer(AQUECER_2);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -923,7 +901,7 @@ void loop() {
       if ( temperatura > MAXTEMPERATURE ){
         entraEstadoEsvaziar(ESVAZIAR_3);
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
@@ -932,15 +910,15 @@ void loop() {
           timerExaustao = false;
           entraEstadoDesligado();
       }
-      if (botaoDireitoPressionado()){
+      if (botaoDireitoPressionado){
         entraEstadoPausado();
       }
       break;
      case PAUSADO:
-      if (botaoEsquerdoPressionado()){
+      if (botaoEsquerdoPressionado){
          retornaDeEstadoPausado();
       }
-      if (botaoDireitoPressionado ()){
+      if (botaoDireitoPressionado){
         entraEstadoDesligado();
       }
       break;
