@@ -400,9 +400,13 @@ bool verificaBotaoDireitoPressionado(){
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
   if (buttonStateDireito == LOW) {
-    Serial.println("Botao direito pressionado");
     delay(500);
-    return true;
+    buttonStateDireito = digitalRead(botaoDireitoPin);
+    if(buttonStateDireito == LOW) {
+      Serial.println("Botao direito pressionado");
+      delay(1000);
+      return true;
+    }
   } else {
     return false;
   }
@@ -438,9 +442,13 @@ bool verificaBotaoEsquerdoPressionado(){
 
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
   if (buttonStateEsquerdo == LOW) {
-    Serial.println("Botao esquerdo pressionado");
     delay(500);
-    return true;
+    buttonStateEsquerdo = digitalRead(botaoEsquerdoPin);
+    if(buttonStateEsquerdo == LOW) {
+      Serial.println("Botao esquerdo pressionado");
+      delay(1000);
+      return true;
+    }
   } else {
     return false;
   }
