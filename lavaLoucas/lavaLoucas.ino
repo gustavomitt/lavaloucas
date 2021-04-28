@@ -840,10 +840,11 @@ void loop() {
           //timer.in(tempoAquecido, entraEstadoEsvaziar,ESVAZIAR_1);
         }
         entraEstadoAspergir(LAVAR);
-      }
-      if (contadorTimerAquecido > tempoAquecido) {
-          timerAquecido = false;
-          entraEstadoEsvaziar(ESVAZIAR_1);
+      } else {
+        if (contadorTimerAquecido > tempoAquecido) {
+            timerAquecido = false;
+            entraEstadoEsvaziar(ESVAZIAR_1);
+        }
       }
       if (botaoDireitoPressionado){
         entraEstadoPausado();
