@@ -219,13 +219,15 @@ void entraEstadoDesligado(){
   // seta estados
   setState(DESLIGADO);
   
+  telaDesligado();
+  delay(1000);
+
   // acoes
   desligaBombaDeCirculacao();
   desligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
   
-  telaDesligado();
 
   // Variaveis no default
   // Timers
@@ -255,13 +257,15 @@ void entraEstadoPausado(){
   // seta estados
   setState(PAUSADO);
 
+  telaPausado();
+  delay(1000);
+
   // acoes
   desligaBombaDeCirculacao();
   desligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
 
-  telaPausado();
 }
 
 void entraEstadoEncher(int estado){
@@ -276,6 +280,9 @@ void entraEstadoEncher(int estado){
   
   // configura estados
   setState(estado);
+
+  telaLigado(estadoAtual);
+  delay(1000);
     
   // acoes
   desligaBombaDeCirculacao();
@@ -283,7 +290,6 @@ void entraEstadoEncher(int estado){
   desligaEbulidor();
   ligaValvula();
 
-  telaLigado(estadoAtual);
 }
 
 void entraEstadoAspergir(int estado){
@@ -305,6 +311,9 @@ void entraEstadoAspergir(int estado){
   
   // configura estados
   setState(estado);
+
+  telaLigado(estadoAtual);
+  delay(1000);
   
   // acoes
   ligaBombaDeCirculacao();
@@ -312,7 +321,6 @@ void entraEstadoAspergir(int estado){
   desligaEbulidor();
   desligaValvula();
 
-  telaLigado(estadoAtual);
 }
 
 void entraEstadoAquecer(int estado){
@@ -322,6 +330,9 @@ void entraEstadoAquecer(int estado){
 
   // configura estados
   setState(estado);
+
+  telaLigado(estadoAtual);
+  delay(1000);
   
   // acoes
   ligaBombaDeCirculacao();
@@ -329,7 +340,6 @@ void entraEstadoAquecer(int estado){
   ligaEbulidor();
   desligaValvula();
   
-  telaLigado(estadoAtual);
 }
 
 void entraEstadoEsvaziar(int estado){
@@ -367,13 +377,15 @@ void entraEstadoEsvaziar(int estado){
   // configura estados
   setState(estado);
   
+  telaLigado(estadoAtual);
+  delay(1000);
+
   // acoes
   desligaBombaDeCirculacao();
   ligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
 
-  telaLigado(estadoAtual);
 }
 
 
@@ -404,7 +416,7 @@ bool verificaBotaoDireitoPressionado(){
     buttonStateDireito = digitalRead(botaoDireitoPin);
     if(buttonStateDireito == LOW) {
       Serial.println("Botao direito pressionado");
-      delay(1000);
+      //delay(1000);
       return true;
     }
   } else {
@@ -446,7 +458,7 @@ bool verificaBotaoEsquerdoPressionado(){
     buttonStateEsquerdo = digitalRead(botaoEsquerdoPin);
     if(buttonStateEsquerdo == LOW) {
       Serial.println("Botao esquerdo pressionado");
-      delay(1000);
+      //delay(1000);
       return true;
     }
   } else {
