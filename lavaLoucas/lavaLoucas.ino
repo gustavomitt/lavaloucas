@@ -20,7 +20,8 @@
 #define ENXAGUE_2 9
 #define AQUECER_2 10
 #define ESVAZIAR_3 11
-#define PAUSADO 12
+#define VENTILAR 12
+#define PAUSADO 13
 
 #define ARRAYSIZE 15
 
@@ -37,6 +38,7 @@ String estados[ARRAYSIZE] = {
   "ENXAGUE_2",
   "AQUECER_2",
   "ESVAZIAR_3",
+  "VENTILAR",
   "PAUSADO",
   
 };
@@ -127,7 +129,7 @@ const int bombaCirculacao = 22;
 const int bombaExaustao = 24;
 const int ebulidor = 26;
 const int valvula = 28;
-
+const int ventilador = 30;
 
 // Estado dos atuadores
 bool bombaDeCirculacaoFuncionando;
@@ -135,24 +137,29 @@ bool bombaDeExaustaoFuncionando;
 bool ebulidorFuncionando;
 bool valvulaFuncionando;
 bool ebulidorFuncionandoOld;
+bool ventiladorFuncionando;
 
 // Estado do time
 bool timerLigado;
 unsigned int tempoAquecido = 300; // 5 minutos
 unsigned int tempoExaustao  = 20; // 20 segundos
 unsigned int tempoExague = 300; // 5 minutos
+unsigned int tempoVentilacao = 900; // 15 minutos
 volatile unsigned int volatileContadorTimerAquecido; 
 volatile unsigned int volatileContadorTimerExaustao;
 volatile unsigned int volatileContadorTimerExague;
+volatile unsigned int volatileContadorTimerVentilacao;
 volatile unsigned int volatileContadorPortaAberta;
 volatile unsigned int volatileContadorBotaoPretoPressionado;
 volatile unsigned int volatileContadorBotaoAmareloPressionado;
 unsigned int contadorTimerAquecido; 
 unsigned int contadorTimerExaustao;
 unsigned int contadorTimerExague;
+unsigned int contadorTimerVentilacao;
 bool timerAquecido; 
 bool timerExaustao;
 bool timerExague;
+bool timerVentilacao;
 
 // variaveis de estado
 byte estadoAtual;
@@ -204,6 +211,16 @@ void ligaValvula(){
   //Serial.print("Valvula lidada.\n");
 }
 
+void desligaVentilador(){
+  digitalWrite(ventilador, HIGH);
+  //Serial.print("Ventilador deslidado.\n");
+}
+
+void ligaVentilador(){
+  digitalWrite(ventilador, LOW);
+  //Serial.print("Ventilador lidado.\n");
+}
+
 void setState(int estado){
   estadoAnterior = estadoAtual;
   estadoAtual = estado;
@@ -227,6 +244,7 @@ void entraEstadoDesligado(){
   desligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
+  desligaVentilador();
   
 
   // Variaveis no default
@@ -234,6 +252,7 @@ void entraEstadoDesligado(){
   timerAquecido = false; 
   timerExaustao = false;
   timerExague = false;
+  timerVentilacao = false;
   // Nivel
   cheio = false;
   cheioOld = false;
@@ -265,6 +284,7 @@ void entraEstadoPausado(){
   desligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
+  desligaVentilador();
 
 }
 
@@ -289,6 +309,7 @@ void entraEstadoEncher(int estado){
   desligaBombaDeExaustao();
   desligaEbulidor();
   ligaValvula();
+  desligaVentilador();
 
 }
 
@@ -320,6 +341,7 @@ void entraEstadoAspergir(int estado){
   desligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
+  desligaVentilador();
 
 }
 
@@ -339,6 +361,7 @@ void entraEstadoAquecer(int estado){
   desligaBombaDeExaustao();
   ligaEbulidor();
   desligaValvula();
+  desligaVentilador();
   
 }
 
@@ -348,8 +371,8 @@ void entraEstadoEsvaziar(int estado){
   Serial.print("\n");
 
   Serial.print("Ligando timer para desligar bomba de exaustao\n");
-  timerExaustao = true;
-  volatileContadorTimerExaustao = 0;
+  timerVentilacao = true;
+  volatileContadorTimerVentilacao = 0;
   /*switch(estado){
     case ESVAZIAR_1:
       primeiraChamadaDoTimer4 = true;
@@ -385,9 +408,34 @@ void entraEstadoEsvaziar(int estado){
   ligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
+  desligaVentilador();
 
 }
 
+void entraEstadoVentilar(int estado){
+  Serial.print("Entrando no estado Ventilar: ");
+  Serial.print(estado);
+  Serial.print("\n");
+
+  Serial.print("Ligando timer para desligar o vantilador\n");
+  timerVentilacao = true;
+  volatileContadorTimerVentilacao = 0;
+
+  // configura estados
+  setState(estado);
+  
+  telaLigado(estadoAtual);
+  delay(1000);
+
+  // acoes
+  desligaBombaDeCirculacao();
+  desligaBombaDeExaustao();
+  desligaEbulidor();
+  desligaValvula();
+  desligaVentilador();
+  ligaVentilador();
+
+}
 
 bool verificaBotaoDireitoPressionado(){
   /*tp = ts.getPoint();
@@ -531,6 +579,12 @@ void lerTemperatura(){
       volatileContadorTimerExague++;
       Serial.print("Timer Enxague : ");
       Serial.print(volatileContadorTimerExague);
+      Serial.print("\n");
+  }
+  if (timerVentilacao){
+      volatileContadorTimerVentilacao++;
+      Serial.print("Timer Ventilacao : ");
+      Serial.print(volatileContadorTimerVentilacao);
       Serial.print("\n");
   }
 }
@@ -688,6 +742,9 @@ void retornaDeEstadoPausado(){
     case ESVAZIAR_3:
       entraEstadoEsvaziar(ESVAZIAR_3);
       break;
+    case VENTILAR:
+      entraEstadoVentilar(VENTILAR);
+      break;
   }
 }
 
@@ -719,6 +776,7 @@ void setup() {
   timerAquecido = false; 
   timerExaustao = false;
   timerExague = false;
+  timerVentilacao = false;
 
   // Nivel
   cheio = false;
@@ -749,6 +807,7 @@ void setup() {
   desligaBombaDeExaustao();
   desligaEbulidor();
   desligaValvula();
+  desligaVentilador();
   
 
   // Inicia LCD
@@ -771,6 +830,7 @@ void loop() {
   contadorTimerAquecido = volatileContadorTimerAquecido;
   contadorTimerExaustao = volatileContadorTimerExaustao;
   contadorTimerExague = volatileContadorTimerExague;
+  contadorTimerVentilacao = volatileContadorTimerVentilacao;
   //float temperaturaCopy = temperatura;
   interrupts();
 
@@ -929,6 +989,15 @@ void loop() {
      case ESVAZIAR_3:
       if (contadorTimerExaustao > tempoExaustao) {
           timerExaustao = false;
+          entraEstadoVentilar(VENTILAR);
+      }
+      if (botaoDireitoPressionado){
+        entraEstadoPausado();
+      }
+      break;
+     case VENTILAR:
+      if (contadorTimerVentilacao > tempoVentilacao) {
+          timerVentilacao = false;
           entraEstadoDesligado();
       }
       if (botaoDireitoPressionado){
