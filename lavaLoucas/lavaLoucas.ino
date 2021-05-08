@@ -267,6 +267,7 @@ void entraEstadoDesligado(){
   // Ebulidor
   ebulidorFuncionando = false;
   ebulidorFuncionandoOld = false;
+  
   delay(1000);
 
 }
@@ -285,6 +286,7 @@ void entraEstadoPausado(){
   desligaValvula();
   desligaVentilador();
 
+  delay(1000);
 }
 
 void entraEstadoEncher(int estado){
@@ -301,7 +303,6 @@ void entraEstadoEncher(int estado){
   setState(estado);
 
   telaLigado(estadoAtual);
-  delay(1000);
     
   // acoes
   desligaBombaDeCirculacao();
@@ -309,6 +310,7 @@ void entraEstadoEncher(int estado){
   desligaEbulidor();
   ligaValvula();
   desligaVentilador();
+
   delay(1000);
 
 }
@@ -342,6 +344,8 @@ void entraEstadoAspergir(int estado){
   desligaValvula();
   desligaVentilador();
 
+  delay(1000);
+
 }
 
 void entraEstadoAquecer(int estado){
@@ -353,7 +357,6 @@ void entraEstadoAquecer(int estado){
   setState(estado);
 
   telaLigado(estadoAtual);
-  delay(1000);
   
   // acoes
   ligaBombaDeCirculacao();
