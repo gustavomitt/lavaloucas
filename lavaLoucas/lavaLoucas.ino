@@ -372,8 +372,8 @@ void entraEstadoEsvaziar(int estado){
   Serial.print("\n");
 
   Serial.print("Ligando timer para desligar bomba de exaustao\n");
-  timerVentilacao = true;
-  volatileContadorTimerVentilacao = 0;
+  timerExaustao = true;
+  volatileContadorTimerExaustao = 0;
   /*switch(estado){
     case ESVAZIAR_1:
       primeiraChamadaDoTimer4 = true;
