@@ -9,19 +9,27 @@
 
 // Definicao de estados
 #define DESLIGADO 0
-#define ENCHER_1 1
-#define LAVAR 2
-#define AQUECER_1 3
-#define ESVAZIAR_1 4
-#define ENCHER_2 5
-#define ENXAGUE_1 6
-#define ESVAZIAR_2 7
-#define ENCHER_3 8
-#define ENXAGUE_2 9
-#define AQUECER_2 10
-#define ESVAZIAR_3 11
-#define VENTILAR 12
-#define PAUSADO 13
+#define CICLO 1
+#define ENCHER_1 2
+#define LAVAR 3
+#define AQUECER_1 4
+#define ESVAZIAR_1 5
+#define ENCHER_2 6
+#define ENXAGUE_1 7
+#define ESVAZIAR_2 8
+#define ENCHER_3 9
+#define ENXAGUE_2 10
+#define AQUECER_2 11
+#define ESVAZIAR_3 12
+#define VENTILAR 13
+#define PAUSADO 14
+
+// Definicao de ciclos
+#define CICLO_LAVAR 0
+#define CICLO_PRELAVAR 1
+#define CICLO_ESVAZIAR 2
+
+int ciclo;
 
 #define ARRAYSIZE 15
 
@@ -252,6 +260,10 @@ void entraEstadoDesligado(){
   timerExaustao = false;
   timerExague = false;
   timerVentilacao = false;
+  
+  contadorTimerAquecido = 0;
+  volatileContadorTimerAquecido = 0;
+  
   // Nivel
   cheio = false;
   cheioOld = false;
@@ -267,6 +279,25 @@ void entraEstadoDesligado(){
   // Ebulidor
   ebulidorFuncionando = false;
   ebulidorFuncionandoOld = false;
+  
+  delay(1000);
+
+}
+
+void entraEstadoCiclo(){
+  
+  Serial.print("Entrando no estado de escolha de ciclo\n");
+  // seta estados
+  setState(CICLO);
+  
+  telaCiclo();
+
+  // acoes
+  desligaBombaDeCirculacao();
+  desligaBombaDeExaustao();
+  desligaEbulidor();
+  desligaValvula();
+  desligaVentilador();
   
   delay(1000);
 
@@ -529,6 +560,13 @@ void telaDesligado(){
   escreveTexto(50,90,"Aquecimento: desligado",2,VERDE); // Texto é escrito na posição (50,0)
   criarBotao(10,200,150,30,"Esvaziar",VERMELHO); // Esquerda
   criarBotao(170,200,120,30,"Ligar",VERMELHO); // Direita
+}
+
+void telaCiclo(){
+  tft.setRotation(3); // Display é rotacionado para modo paisagem
+  tft.fillScreen(PRETO); // Tela  é preenchida pela cor Preta
+  criarBotao(10,200,150,30,"PreLav",VERMELHO); // Esquerda
+  criarBotao(170,200,120,30,"Lavar",VERMELHO); // Direita
 }
 
 void telaLigado(int estado){
@@ -860,14 +898,17 @@ void loop() {
     incomeByte = int(Serial.read());
     Serial.println("Entrada na serial: " + String(incomeByte));
     switch (incomeByte){
-      case 49:
+      case 49: // caractere "1"
         entraEstadoEncher(ENCHER_1);
         break;
-      case 50:
+      case 50: // caractere "2"
         entraEstadoPausado();
         break;
-      case 51:
+      case 51: // caractere "3"
         entraEstadoEsvaziar(ESVAZIAR_3);
+        break;
+      case 52: // caractere "4"
+        entraEstadoVentilar(VENTILAR);
         break;
     }
   }
@@ -878,9 +919,20 @@ void loop() {
       //Serial.print("Case Desligado\n");
       if (botaoEsquerdoPressionado){
         entraEstadoEsvaziar(ESVAZIAR_3);
+        ciclo = CICLO_ESVAZIAR;
+      }
+      if (botaoDireitoPressionado){
+        entraEstadoCiclo();
+      }
+      break;
+    case CICLO:
+      if (botaoEsquerdoPressionado){
+        entraEstadoEncher(ENCHER_2);
+        ciclo = CICLO_PRELAVAR;
       }
       if (botaoDireitoPressionado){
         entraEstadoEncher(ENCHER_1);
+        ciclo = CICLO_LAVAR;
       }
       break;
      case ENCHER_1:
@@ -960,7 +1012,11 @@ void loop() {
      case ESVAZIAR_2:
       if (contadorTimerExaustao > tempoExaustao) {
           timerExaustao = false;
-          entraEstadoEncher(ENCHER_3);
+          if(ciclo == CICLO_PRELAVAR){
+            entraEstadoDesligado();
+          } else {
+            entraEstadoEncher(ENCHER_3);
+          }
       }
       if (botaoDireitoPressionado){
         entraEstadoPausado();
@@ -993,7 +1049,11 @@ void loop() {
      case ESVAZIAR_3:
       if (contadorTimerExaustao > tempoExaustao) {
           timerExaustao = false;
-          entraEstadoVentilar(VENTILAR);
+          if(ciclo == CICLO_ESVAZIAR){
+            entraEstadoDesligado();
+          } else {
+            entraEstadoVentilar(VENTILAR);
+          }
       }
       if (botaoDireitoPressionado){
         entraEstadoPausado();
