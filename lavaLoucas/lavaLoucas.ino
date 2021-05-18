@@ -35,6 +35,7 @@ int ciclo;
 
 String estados[ARRAYSIZE] = {
   "DESLIGADO",
+  "CICLO",
   "ENCHER_1",
   "LAVAR",
   "AQUECER_1",
@@ -565,6 +566,8 @@ void telaDesligado(){
 void telaCiclo(){
   tft.setRotation(3); // Display é rotacionado para modo paisagem
   tft.fillScreen(PRETO); // Tela  é preenchida pela cor Preta
+  escreveTexto(50,0,"Escolha de Ciclo",3,BRANCO); // Texto é escrito na posição (50,0)
+  escreveTexto(50,50,"Temperatura:",2,VERDE); // Texto é escrito na posição (50,0)
   criarBotao(10,200,150,30,"PreLav",VERMELHO); // Esquerda
   criarBotao(170,200,120,30,"Lavar",VERMELHO); // Direita
 }
