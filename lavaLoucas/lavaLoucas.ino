@@ -681,12 +681,18 @@ void lerTemperatura(){
     entraEstadoErro("Excedido tempo maximo de enchimento.");
   }
   lerNivel();
-  if( (estadoAtual == (ENCHER_1 || ENCHER_2 || ENCHER_3)) && (volatileCheio == true) ){
-    if (contadorDeLeiturasDeNivelCheio > numeroMaximoDeLeiturasDeNivelCheio) {
-      entraEstadoErro("Excedido numero maximo de leituras de nivel cheio.");
-    } else {
-      contadorDeLeiturasDeNivelCheio++;
+  if (estadoAtual == (ENCHER_1 || ENCHER_2 || ENCHER_3)){
+    if(millis() > (volatileTimerDeEnchimento + tempoMaximoDeEnchimento)){
+      entraEstadoErro("Excedido tempo maximo de enchimento.");
     }
+    if( volatileCheio == true ){
+      if (contadorDeLeiturasDeNivelCheio > numeroMaximoDeLeiturasDeNivelCheio) {
+        entraEstadoErro("Excedido numero maximo de leituras de nivel cheio.");
+      } else {
+        contadorDeLeiturasDeNivelCheio++;
+      }
+    }
+    
   }
   if ( temperatura > TEMPERATURADEEMERGENCIA ) {
     entraEstadoErro("Temperatura acima no nivel de emergencia");
