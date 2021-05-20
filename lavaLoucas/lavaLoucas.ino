@@ -678,9 +678,6 @@ void lerTemperatura(){
   }
 
   // Verificacoes de seguranca
-  if(millis() > (volatileTimerDeEnchimento + tempoMaximoDeEnchimento)){
-    entraEstadoErro("Excedido tempo maximo de enchimento.");
-  }
   lerNivel();
   if ( (estadoAtual == ENCHER_1) || (estadoAtual == ENCHER_2) || (estadoAtual == ENCHER_3) ){
     if(millis() > (volatileTimerDeEnchimento + tempoMaximoDeEnchimento)){
