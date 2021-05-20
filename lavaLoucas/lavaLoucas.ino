@@ -23,6 +23,7 @@
 #define ESVAZIAR_3 12
 #define VENTILAR 13
 #define PAUSADO 14
+#define ERRO 15
 
 // Definicao de ciclos
 #define CICLO_LAVAR 0
@@ -31,7 +32,7 @@
 
 int ciclo;
 
-#define ARRAYSIZE 15
+#define ARRAYSIZE 20
 
 String estados[ARRAYSIZE] = {
   "DESLIGADO",
@@ -49,7 +50,7 @@ String estados[ARRAYSIZE] = {
   "ESVAZIAR_3",
   "VENTILAR",
   "PAUSADO",
-  
+  "ERRO"
 };
 
 
@@ -107,6 +108,7 @@ volatile byte temperaturaOld;
 
 #define MINTEMPERATURE 45.0
 #define MAXTEMPERATURE 55.0
+#define TEMPERATURADEEMERGENCIA 60.0
 //#define MINTEMPERATURE 30.0
 //#define MAXTEMPERATURE 35.0
 
@@ -115,6 +117,10 @@ int nivel = 21;
 volatile bool volatileCheio;
 bool cheio;
 bool cheioOld;
+const unsigned long tempoMaximoDeEnchimento = 30000; // Tempo maximo em qua a maquina estara enchendo em milisegundos
+volatile unsigned long volatileTimerDeEnchimento; // Timer a ser disparado quando a maquina comecar a encher
+const int numeroMaximoDeLeiturasDeNivelCheio = 3; // Maximo de leituras de nivel cheio apos o primeiro nivel cheio
+volatile int contadorDeLeiturasDeNivelCheio; //
 
 // Porta aberta
 int portaPin = 20;
@@ -270,6 +276,9 @@ void entraEstadoDesligado(){
   cheioOld = false;
   volatileCheio = false;
   //timer.every(1000, lerNivel);
+  volatileTimerDeEnchimento = 0;
+  contadorDeLeiturasDeNivelCheio = 0;
+  
 
   // Porta Aberta
   portaAberta = false;
@@ -292,6 +301,27 @@ void entraEstadoCiclo(){
   setState(CICLO);
   
   telaCiclo();
+
+  // acoes
+  desligaBombaDeCirculacao();
+  desligaBombaDeExaustao();
+  desligaEbulidor();
+  desligaValvula();
+  desligaVentilador();
+  
+  delay(1000);
+
+}
+
+void entraEstadoErro(String mensagem){
+  
+  Serial.print("Entrando no estado de Erro\n");
+  Serial.print("Mensagem de erro: ");
+  Serial.println(mensagem);
+  // seta estados
+  setState(ERRO);
+  
+  telaErro(mensagem);
 
   // acoes
   desligaBombaDeCirculacao();
@@ -330,6 +360,9 @@ void entraEstadoEncher(int estado){
     timerLigado = false;
     Serial.print("timerLigado = false\n");
   }
+  // Configura os timers de emergencia
+  contadorDeLeiturasDeNivelCheio = 0;
+  volatileTimerDeEnchimento = millis();
   
   // configura estados
   setState(estado);
@@ -572,6 +605,16 @@ void telaCiclo(){
   criarBotao(170,200,120,30,"Lavar",VERMELHO); // Direita
 }
 
+void telaErro(String mensagem){
+  tft.setRotation(3); // Display é rotacionado para modo paisagem
+  tft.fillScreen(PRETO); // Tela  é preenchida pela cor Preta
+  escreveTexto(50,0,"Erro:",3,BRANCO);
+  escreveTexto(50,20,mensagem,3,BRANCO);
+  escreveTexto(50,50,"Temperatura:",2,VERDE);
+  criarBotao(10,200,150,30,"PreLav",VERMELHO); // Esquerda
+  criarBotao(170,200,120,30,"Lavar",VERMELHO); // Direita
+}
+
 void telaLigado(int estado){
   tft.setRotation(3); // Display é rotacionado para modo paisagem
   tft.fillScreen(PRETO); // Tela  é preenchida pela cor Branca
@@ -631,6 +674,22 @@ void lerTemperatura(){
       Serial.print("Timer Ventilacao : ");
       Serial.print(volatileContadorTimerVentilacao);
       Serial.print("\n");
+  }
+
+  // Verificacoes de seguranca
+  if(millis() > (volatileTimerDeEnchimento + tempoMaximoDeEnchimento)){
+    entraEstadoErro("Excedido tempo maximo de enchimento.");
+  }
+  lerNivel();
+  if( (estadoAtual == (ENCHER_1 || ENCHER_2 || ENCHER_3)) && (volatileCheio == true) ){
+    if (contadorDeLeiturasDeNivelCheio > numeroMaximoDeLeiturasDeNivelCheio) {
+      entraEstadoErro("Excedido numero maximo de leituras de nivel cheio.");
+    } else {
+      contadorDeLeiturasDeNivelCheio++;
+    }
+  }
+  if ( temperatura > TEMPERATURADEEMERGENCIA ) {
+    entraEstadoErro("Temperatura acima no nivel de emergencia");
   }
 }
 
@@ -830,6 +889,8 @@ void setup() {
   pinMode(nivel, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(nivel), lerNivel, CHANGE);
   //timer.every(1000, lerNivel);
+  volatileTimerDeEnchimento = 0;
+  contadorDeLeiturasDeNivelCheio = 0;
 
   // Porta Aberta
   portaAberta = false;
