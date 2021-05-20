@@ -679,6 +679,8 @@ void lerTemperatura(){
 
   // Verificacoes de seguranca
   lerNivel();
+  Serial.print("Nível está cheio? ");
+  Serial.println(volatileCheio);
   if ( (estadoAtual == ENCHER_1) || (estadoAtual == ENCHER_2) || (estadoAtual == ENCHER_3) ){
     if(millis() > (volatileTimerDeEnchimento + tempoMaximoDeEnchimento)){
       entraEstadoErro("Excedido tempo maximo de enchimento.");
