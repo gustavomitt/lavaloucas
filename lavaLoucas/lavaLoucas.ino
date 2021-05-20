@@ -117,7 +117,7 @@ int nivel = 21;
 volatile bool volatileCheio;
 bool cheio;
 bool cheioOld;
-const unsigned long tempoMaximoDeEnchimento = 300000; // Tempo maximo em qua a maquina estara enchendo em milisegundos
+const unsigned long tempoMaximoDeEnchimento = 50000; // Tempo maximo em qua a maquina estara enchendo em milisegundos
 volatile unsigned long volatileTimerDeEnchimento; // Timer a ser disparado quando a maquina comecar a encher
 const int numeroMaximoDeLeiturasDeNivelCheio = 3; // Maximo de leituras de nivel cheio apos o primeiro nivel cheio
 volatile int contadorDeLeiturasDeNivelCheio; //
