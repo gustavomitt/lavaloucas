@@ -1,4 +1,4 @@
-#include "Adafruit_GFX.h" // Biblioteca Gráfica Adafruit
+git#include "Adafruit_GFX.h" // Biblioteca Gráfica Adafruit
 #include <MCUFRIEND_kbv.h> // Bibllioteca para controle do lcd 
 //#include <TouchScreen.h>
 #include "max6675.h"
@@ -118,7 +118,7 @@ volatile bool volatileCheio;
 bool cheio;
 bool cheioOld;
 // Tempo de enchimento medido: 37s
-const unsigned long tempoMaximoDeEnchimento = 80000; // Tempo maximo em qua a maquina estara enchendo em milisegundos
+const unsigned long tempoMaximoDeEnchimento = 120000; // Tempo maximo em qua a maquina estara enchendo em milisegundos
 volatile unsigned long volatileTimerDeEnchimento; // Timer a ser disparado quando a maquina comecar a encher
 const int numeroMaximoDeLeiturasDeNivelCheio = 3; // Maximo de leituras de nivel cheio apos o primeiro nivel cheio
 volatile int contadorDeLeiturasDeNivelCheio; //
